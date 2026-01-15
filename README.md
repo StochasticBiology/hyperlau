@@ -36,6 +36,7 @@ plot_hyperinf(fit.inf)
 # natively in hyperinf, with and without guaranteeing transition independence
 fit.1 = hyperinf(my.df, my.tree)
 fit.2 = hyperinf(my.df, my.tree, independent.transitions = FALSE)
+library(ggpubr)
 ggarrange(plot_hyperinf_data(my.df, my.tree),
           plot_hyperinf(fit.1),
           plot_hyperinf(fit.2),
