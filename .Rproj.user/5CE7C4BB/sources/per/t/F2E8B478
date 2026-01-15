@@ -1,0 +1,27 @@
+{
+    "id": "F2E8B478",
+    "path": "~/Documents/GitHub/hyperlau/R/data-curation.R",
+    "project_path": "R/data-curation.R",
+    "type": "r_source",
+    "hash": "809364468",
+    "contents": "",
+    "dirty": false,
+    "created": 1768418353595.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "137,8",
+        "scrollLine": "120"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1768419958,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1768419958385,
+    "read_only": false,
+    "read_only_alternatives": []
+}

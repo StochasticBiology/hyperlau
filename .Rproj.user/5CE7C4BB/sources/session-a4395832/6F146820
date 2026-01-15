@@ -1,0 +1,26 @@
+{
+    "id": "6F146820",
+    "path": "~/Documents/GitHub/hyperlau/inst/test.R",
+    "project_path": "inst/test.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": true,
+    "created": 1768450190088.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "19,0",
+        "scrollLine": "3"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1768497440,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1768497673612,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,26 @@
+{
+    "id": "F4ACE174",
+    "path": "~/Documents/GitHub/hyperlau/src/hyperlau.cpp",
+    "project_path": "src/hyperlau.cpp",
+    "type": "cpp",
+    "hash": "2524439392",
+    "contents": "",
+    "dirty": false,
+    "created": 1768466175702.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "778,25",
+        "scrollLine": "769"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1768497288,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1768497288073,
+    "read_only": false,
+    "read_only_alternatives": []
+}
