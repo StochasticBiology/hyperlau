@@ -822,13 +822,6 @@ List HyperLAU(NumericMatrix obs,
      cout << i << ":" << data[2*i+0] << "->" << data[2*i+1] << "\n";
    }
    
-   Rprintf("Checking duplicates\n");
-   // check for duplications 
-   vector<int> frequ;
-   vector<string> reduced_data = red_data(data,frequ);
-   
-   // setting L to the string length (= number of considered features)
-   string first_row = reduced_data[0];
    globalL = m;
    
    // store the input data in different vectors that can be used by the algorithm
@@ -836,6 +829,42 @@ List HyperLAU(NumericMatrix obs,
      string x = number2binary(i,globalL);
      globalR.push_back(x);
    }
+   
+   NumericVector boot_v;
+   NumericVector from_v;
+   NumericVector to_v;
+   NumericVector prob_v;
+   NumericVector flux_v;
+   
+   NumericVector boot_lik_v;
+   NumericVector best_lik_v;
+   
+   std::random_device rd;
+   std::mt19937 gen(rd());
+   uniform_int_distribution<int> distribution(0, n-1);
+   
+   for(int boot = 0; boot <= bootstrap; boot++) {
+     Rprintf("Bootstrap %i\n", boot);
+   Rprintf("Checking duplicates\n");
+   // check for duplications 
+   vector<int> frequ;
+   vector<string> reduced_data;
+   
+   if(boot == 0) {
+     reduced_data = red_data(data,frequ);
+   } else {
+     string d_bt;
+     vector<string> data_bt;
+     for (int j = 0; j<n; j++){
+       int ri = distribution(gen);
+       d_bt = data[ri];
+       data_bt.push_back(d_bt);
+     }
+     reduced_data = red_data(data_bt,frequ);
+   }
+   
+   // setting L to the string length (= number of considered features)
+   string first_row = reduced_data[0];
    
    Rprintf("Extracting words\n");
    
@@ -899,14 +928,6 @@ List HyperLAU(NumericMatrix obs,
      }
    }
    
-   Rprintf("A matrix is\n");
-   for(int i = 0; i < m; i++) {
-     for(int j = 0; j < m; j++) {
-       Rprintf("%.3e ", rate_matrix(i,j));
-     }
-     Rprintf("\n");
-   }
-   
    // transform the rate matrix into the needed form. Models 1-4 deal with a vector form of the matrix, model F (-1) deals with a matrix
    vector<double> x_initial_vec;
    vector<double> best_vec;
@@ -953,12 +974,6 @@ List HyperLAU(NumericMatrix obs,
      }
    }
    
-   
-   NumericVector from_v;
-   NumericVector to_v;
-   NumericVector prob_v;
-   NumericVector flux_v;
-   
    //creating outputs
    // 	ofstream outdata;
    // 	outdata.open("transitions_" + out_name + ".txt");
@@ -966,6 +981,7 @@ List HyperLAU(NumericMatrix obs,
    for(int i = 0; i<pow(2,globalL); i++){
      for(int j = 0; j < pow(2,globalL); j++){
        if (final_trans_matrix(j,i) != 0){
+         boot_v.push_back(boot);
          from_v.push_back(i);
          to_v.push_back(j);
          prob_v.push_back(final_trans_matrix(j,i));
@@ -976,23 +992,26 @@ List HyperLAU(NumericMatrix obs,
      }
    }
    //  	outdata.close();
-   
-   NumericVector best_lik_v;
-   
+
    //  	ofstream liklh;
    // 	liklh.open("best_likelihood_" + out_name + ".txt");
    for(int i = 0; i < prog_best_lik.size();i++){
+     boot_lik_v.push_back(boot);
      best_lik_v.push_back(prog_best_lik[i]);
      //	liklh << prog_best_lik[i] << endl;
    }
    //  	liklh.close();
+   }
    
-   DataFrame rdf = DataFrame::create(Named("From") = from_v,
+   DataFrame rdf = DataFrame::create(Named("Bootstrap") = boot_v,
+                                     Named("From") = from_v,
                                      Named("To") = to_v,
                                      Named("Probability") = prob_v,
                                      Named("Flux") = flux_v);
+   DataFrame rl = DataFrame::create(Named("Bootstrap") = boot_lik_v,
+                                    Named("Likelihood") = best_lik_v);
    List rlist = List::create(Named("Dynamics") = rdf,
-                             Named("Likelihood") = best_lik_v,
+                             Named("Likelihood") = rl,
                              Named("L") = m);
    
    return(rlist);
