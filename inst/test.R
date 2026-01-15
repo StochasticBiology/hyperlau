@@ -18,7 +18,7 @@ fit = HyperLAU(c.utree$dests, c.utree$srcs)
 
 c.utree = curate.uncertain.tree(my.tree, my.df,
                                 independent.transitions = FALSE)
-fit = HyperLAU(c.utree$dests, c.utree$srcs, Xbootstrap = 2)
+fit = HyperLAU(c.utree$dests, c.utree$srcs, nboot = 2)
 }
 
 # natively in hyperinf, with and without guaranteeing transition independence
@@ -30,7 +30,7 @@ ggarrange(plot_hyperinf_data(my.df, my.tree),
           nrow=1)
 
 # uncertainty and visualisation via the bootstrap
-fit.1 = hyperinf(my.df, Xboot = 5)
+fit.1 = hyperinf(my.df, nboot = 5)
 ggarrange(plot_hyperinf_data(my.df),
 plot_hyperinf(fit.1),
 plot_hyperinf(fit.1, uncertainty = TRUE),
@@ -85,6 +85,6 @@ fit.tb = hyperinf(my.data, my.tree)
 
 if(FALSE) {
 prepped = curate.uncertain.tree(my.tree, my.data)
-fit.tb = HyperLAU(prepped$dests, Xinitialstates = prepped$srcs, Xboot = 5)
+fit.tb = HyperLAU(prepped$dests, initialstates = prepped$srcs, nboot = 5)
 }
 plot_hyperinf(fit.tb)

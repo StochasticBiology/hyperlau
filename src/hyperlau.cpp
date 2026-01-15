@@ -745,19 +745,18 @@ void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<str
 }
 
 List HyperLAU(NumericMatrix obs,
-              Nullable<NumericMatrix> Xinitialstates,
-              NumericVector Xbootstrap,
-              NumericVector Xmodel,
-              NumericVector Xrate);
+              Nullable<NumericMatrix> initialstates,
+              NumericVector nboot,
+              NumericVector model,
+              NumericVector rate);
 
 //' HyperLAU computation (Armadillo)
 //'
 //' @param obs Numeric matrix of observations
-//' @param Xinitialstates optional
-//' @param Xbootstrap optional
-//' @param Xmodel optional
-//' @param Xrate optional
-//' @param Xnboot optional
+//' @param initialstates optional
+//' @param model optional
+//' @param rate optional
+//' @param nboot optional
 //' 
 //' @return A fitted HyperLAU model, including a dataframe of transitions, vector of likelihoods, and the dimensionality of the problem
 //' @examples
@@ -766,11 +765,10 @@ List HyperLAU(NumericMatrix obs,
 //' @export
 // [[Rcpp::export]]
 List HyperLAU(NumericMatrix obs,
-               Nullable<NumericMatrix> Xinitialstates = R_NilValue,
-               NumericVector Xbootstrap = 0,
-               NumericVector Xmodel = -1,
-               NumericVector Xrate = 1.001,
-               NumericVector Xnboot = 1)
+               Nullable<NumericMatrix> initialstates = R_NilValue,
+               NumericVector nboot = 0,
+               NumericVector model = -1,
+               NumericVector rate = 1.001)
  {
    
    Rprintf("Starting HyperLAU\n");
@@ -778,10 +776,10 @@ List HyperLAU(NumericMatrix obs,
    List l;
    
    //default values for parameters
-   int bootstrap = Xbootstrap[0];
+   int _bootstrap = nboot[0];
    
-   int model = Xmodel[0];
-   double denom = Xrate[0];
+   int _model = model[0];
+   double denom = rate[0];
    
    int n = obs.nrow();
    int m = obs.ncol();
@@ -803,14 +801,14 @@ List HyperLAU(NumericMatrix obs,
        }
      }
     // data[2*i+1] = s;
-     if(Xinitialstates.isUsable()) {
-       NumericMatrix initialstates(Xinitialstates);
+     if(initialstates.isUsable()) {
+       NumericMatrix _initialstates(initialstates);
     //   std::string s1;
        for (int j = 0; j < m; j++) {
-         if(initialstates(i, j) == 2) {
+         if(_initialstates(i, j) == 2) {
            s1 += "?";
          } else {
-           s1 += std::to_string(static_cast<int>(initialstates(i, j)));
+           s1 += std::to_string(static_cast<int>(_initialstates(i, j)));
          }
        }
      } else {
@@ -843,7 +841,7 @@ List HyperLAU(NumericMatrix obs,
    std::mt19937 gen(rd());
    uniform_int_distribution<int> distribution(0, n-1);
    
-   for(int boot = 0; boot <= bootstrap; boot++) {
+   for(int boot = 0; boot <= _bootstrap; boot++) {
      Rprintf("Bootstrap %i\n", boot);
    Rprintf("Checking duplicates\n");
    // check for duplications 
@@ -900,12 +898,12 @@ List HyperLAU(NumericMatrix obs,
    Rprintf("Initialisaing matrix\n");
    
    //initialising the rate matrix
-   int num_param = pow(globalL,model);
+   int num_param = pow(globalL,_model);
    vector<double> rate_vec(num_param, 0.0);
    arma::mat rate_matrix(pow(2,globalL),pow(2,globalL), arma::fill::zeros);
    
-   if (model != -1){
-     uniform_rate_matrix(rate_vec, model, globalL);
+   if (_model != -1){
+     uniform_rate_matrix(rate_vec, _model, globalL);
    }else{
      arma::vec A_val(pow(2,globalL-1)*globalL, arma::fill::zeros);
      arma::vec A_row_ptr(pow(2,globalL)+1, arma::fill::zeros);
@@ -933,7 +931,7 @@ List HyperLAU(NumericMatrix obs,
    vector<double> best_vec;
    mat x_initial;
    mat best_mat;
-   if (model != -1){
+   if (_model != -1){
      x_initial_vec = rate_vec;
      best_vec = rate_vec;
    }else{
@@ -944,16 +942,16 @@ List HyperLAU(NumericMatrix obs,
    //Simulated annealing 
    vector<double> prog_best_lik;
    Rprintf("Simulated annealing started \n");
-   if (model != -1){
-     simulated_annealing(x_initial_vec, best_vec, globalL, before, after, frequ, model, prog_best_lik, denom);
+   if (_model != -1){
+     simulated_annealing(x_initial_vec, best_vec, globalL, before, after, frequ, _model, prog_best_lik, denom);
    }else{
      simulated_annealing_minus_1(x_initial, best_mat, globalL, before, after, frequ, prog_best_lik, denom);
    }
    
    // get the final transition matrix
    mat final_trans_matrix(pow(2,globalL), pow(2,globalL), fill::zeros);
-   if (model !=-1){
-     build_trans_matrix(globalL, best_vec, model, final_trans_matrix);
+   if (_model !=-1){
+     build_trans_matrix(globalL, best_vec, _model, final_trans_matrix);
    }else{
      final_trans_matrix = best_mat;
    }

@@ -12,24 +12,23 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // HyperLAU
-List HyperLAU(NumericMatrix obs, Nullable<NumericMatrix> Xinitialstates, NumericVector Xbootstrap, NumericVector Xmodel, NumericVector Xrate, NumericVector Xnboot);
-RcppExport SEXP _hyperlau_HyperLAU(SEXP obsSEXP, SEXP XinitialstatesSEXP, SEXP XbootstrapSEXP, SEXP XmodelSEXP, SEXP XrateSEXP, SEXP XnbootSEXP) {
+List HyperLAU(NumericMatrix obs, Nullable<NumericMatrix> initialstates, NumericVector nboot, NumericVector model, NumericVector rate);
+RcppExport SEXP _hyperlau_HyperLAU(SEXP obsSEXP, SEXP initialstatesSEXP, SEXP nbootSEXP, SEXP modelSEXP, SEXP rateSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type obs(obsSEXP);
-    Rcpp::traits::input_parameter< Nullable<NumericMatrix> >::type Xinitialstates(XinitialstatesSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Xbootstrap(XbootstrapSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Xmodel(XmodelSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Xrate(XrateSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Xnboot(XnbootSEXP);
-    rcpp_result_gen = Rcpp::wrap(HyperLAU(obs, Xinitialstates, Xbootstrap, Xmodel, Xrate, Xnboot));
+    Rcpp::traits::input_parameter< Nullable<NumericMatrix> >::type initialstates(initialstatesSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type nboot(nbootSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type rate(rateSEXP);
+    rcpp_result_gen = Rcpp::wrap(HyperLAU(obs, initialstates, nboot, model, rate));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_hyperlau_HyperLAU", (DL_FUNC) &_hyperlau_HyperLAU, 6},
+    {"_hyperlau_HyperLAU", (DL_FUNC) &_hyperlau_HyperLAU, 5},
     {NULL, NULL, 0}
 };
 

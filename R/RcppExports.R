@@ -4,18 +4,17 @@
 #' HyperLAU computation (Armadillo)
 #'
 #' @param obs Numeric matrix of observations
-#' @param Xinitialstates optional
-#' @param Xbootstrap optional
-#' @param Xmodel optional
-#' @param Xrate optional
-#' @param Xnboot optional
+#' @param initialstates optional
+#' @param model optional
+#' @param rate optional
+#' @param nboot optional
 #' 
 #' @return A fitted HyperLAU model, including a dataframe of transitions, vector of likelihoods, and the dimensionality of the problem
 #' @examples
 #' data = matrix(c(0,0,1, 0,1,1, 1,1,1), ncol=3, nrow=3)
 #' fit = HyperLAU(data)
 #' @export
-HyperLAU <- function(obs, Xinitialstates = NULL, Xbootstrap = 0L, Xmodel = -1L, Xrate = 1.001, Xnboot = 1L) {
-    .Call(`_hyperlau_HyperLAU`, obs, Xinitialstates, Xbootstrap, Xmodel, Xrate, Xnboot)
+HyperLAU <- function(obs, initialstates = NULL, nboot = 0L, model = -1L, rate = 1.001) {
+    .Call(`_hyperlau_HyperLAU`, obs, initialstates, nboot, model, rate)
 }
 

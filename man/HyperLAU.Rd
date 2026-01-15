@@ -4,27 +4,18 @@
 \alias{HyperLAU}
 \title{HyperLAU computation (Armadillo)}
 \usage{
-HyperLAU(
-  obs,
-  Xinitialstates = NULL,
-  Xbootstrap = 0L,
-  Xmodel = -1L,
-  Xrate = 1.001,
-  Xnboot = 1L
-)
+HyperLAU(obs, initialstates = NULL, nboot = 0L, model = -1L, rate = 1.001)
 }
 \arguments{
 \item{obs}{Numeric matrix of observations}
 
-\item{Xinitialstates}{optional}
+\item{initialstates}{optional}
 
-\item{Xbootstrap}{optional}
+\item{nboot}{optional}
 
-\item{Xmodel}{optional}
+\item{model}{optional}
 
-\item{Xrate}{optional}
-
-\item{Xnboot}{optional}
+\item{rate}{optional}
 }
 \value{
 A fitted HyperLAU model, including a dataframe of transitions, vector of likelihoods, and the dimensionality of the problem
