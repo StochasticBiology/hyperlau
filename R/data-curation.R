@@ -29,14 +29,22 @@ make.ancestor = function(s1, s2) {
 }
 
 #' Extract transitions from a dataset given a phylogeny and (possibly uncertain) observations on its tips
-#' 
-#' @param data A dataframe. The first column should give a label that matches the tip labels of the phylogeny. The second should be a character string containing "0"s, "1"s, and "?"s
+#'  
 #' @param tree A tree linking the observations, with tip labels corresponding to the first column of the data frame
+#' @param data A dataframe. The first column should give a label that matches the tip labels of the phylogeny. The second should be a character string containing "0"s, "1"s, and "?"s
+#' @param independent.transitions Optional Boolean (default TRUE) -- whether to return only guaranteed independent transitions between states
 #'
 #' @return A named list containing independent transitions, the source data, and reconstructed node states 
 #' @export
-curate.uncertain.tree = function(data, tree) {
-  my.data = data
+curate.uncertain.tree = function(tree, 
+                                 data,
+                                 independent.transitions = TRUE) {
+  if(ncol(data) == 2) {
+    my.data = data
+  } else {
+    data[data == 2 | data == -1] = "?"
+    my.data = as.data.frame(cbind(data[,1], apply(data[,2:ncol(data)], 1, paste, collapse="")))
+  }
   my.rooted.tree = tree
   colnames(my.data)[1] = "label"
   # check for missing data in both barcodes and tips... from curate.tree
@@ -112,10 +120,15 @@ curate.uncertain.tree = function(data, tree) {
   # now, consider which transitions we need to drop from this set to make sure we're dealing with indepedent behaviours
   
   # first, consider only those transitions to a tip state from its immediate ancestor...
-  prune.df = trans.df[trans.df$a < length(my.tree$tip.label),]
+  if(independent.transitions == TRUE) {
+    prune.df = trans.df[trans.df$a < length(my.tree$tip.label),]
+  } else {
+    prune.df = trans.df
+  }
   # ... and those that actually contain information (i.e. before and after states are different)
   prune.df = prune.df[prune.df$before != prune.df$after,]
   
+  if(independent.transitions == TRUE) {
   unsafe = prune.df
   pairs = data.frame()
   # go through every remaining transition
@@ -145,8 +158,12 @@ curate.uncertain.tree = function(data, tree) {
       pairs = rbind(pairs, unsafe[i,])
     }
   }
+  } else {
+    pairs = prune.df
+  }
   
-  # confirm that we're only looking at ancestors of transition pairs that are compatible with 0^L
+  if(FALSE) {
+     # confirm that we're only looking at ancestors of transition pairs that are compatible with 0^L
   a.s = c()
   ref = 2
   for(i in 1:nrow(pairs)) {
@@ -154,11 +171,32 @@ curate.uncertain.tree = function(data, tree) {
       a.s = c(a.s, tree.states[ape::getMRCA(my.tree, c(pairs$b[ref], pairs$b[i]))])
     }
   }
+  }
   
+  srcs = strsplit(pairs[,4], "")
+  L = length(srcs[[1]])
+  srcs = matrix(unlist(srcs), ncol=L, byrow=TRUE)
+  srcs[srcs=="?"] = "2"
+  srcs = apply(srcs, c(1,2), as.numeric)
+  
+  dests = strsplit(pairs[,5], "")
+  dests = matrix(unlist(dests), ncol=L, byrow=TRUE)
+  dests[dests=="?"] = "2"
+  dests = apply(dests, c(1,2), as.numeric)
+  
+  cdata = strsplit(my.data[,2], "")
+  cdata = matrix(unlist(cdata), ncol=L, byrow=TRUE)
+  cdata[cdata=="?"] = "2"
+  cdata = apply(cdata, c(1,2), as.numeric)
+  cdata = cbind(as.data.frame(my.data[,1]), as.data.frame(cdata))
+    
   list.r = list(independents = pairs[,c(4,5)],
                 tree = my.rooted.tree,
-                data = my.data,
-                states= tree.states)
+                rawdata = my.data,
+                data = cdata,
+                states= tree.states,
+                srcs = srcs,
+                dests = dests)
   return(list.r)
 }
 

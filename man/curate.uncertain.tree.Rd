@@ -4,12 +4,14 @@
 \alias{curate.uncertain.tree}
 \title{Extract transitions from a dataset given a phylogeny and (possibly uncertain) observations on its tips}
 \usage{
-curate.uncertain.tree(data, tree)
+curate.uncertain.tree(tree, data, independent.transitions = TRUE)
 }
 \arguments{
+\item{tree}{A tree linking the observations, with tip labels corresponding to the first column of the data frame}
+
 \item{data}{A dataframe. The first column should give a label that matches the tip labels of the phylogeny. The second should be a character string containing "0"s, "1"s, and "?"s}
 
-\item{tree}{A tree linking the observations, with tip labels corresponding to the first column of the data frame}
+\item{independent.transitions}{Optional Boolean (default TRUE) -- whether to return only guaranteed independent transitions between states}
 }
 \value{
 A named list containing independent transitions, the source data, and reconstructed node states
