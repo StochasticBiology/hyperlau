@@ -1,7 +1,7 @@
 # hyperlau
 R library version of HyperLAU
 
-Very early build, little testing. 
+Very early build, little testing. Install with `remotes::install_github("StochasticBiology/hyperlau")`
 
 `curate.uncertain.tree` curates a tree with uncertain observations on the tips (phrased as character strings containing "0", "1", "?"). `HyperLAU` runs HyperLAU, with a mandatory first argument of observations (as a numeric matrix, with 0, 1, 2 (2 corresponding to "?"). It will also take initial states, bootstrap number, and other parameters. It returns a named list where $Dynamics is the interesting content (different bootstrap resamples are concatenated).
 
@@ -10,7 +10,7 @@ _hyperinf_ should now include, and provide, R HyperLAU functionality, running in
 Here's a test run
 
 ```
-remotes::install_github("StochasticBiology/hyperinf")
+remotes::install_github("StochasticBiology/hyperlau")
 library(ape)
 library(hyperlau)
 
