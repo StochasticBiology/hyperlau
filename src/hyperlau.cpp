@@ -582,7 +582,7 @@ double loglh_minus_1(vector<string> before, vector<string> after, vector<int> fr
     loglh[l] = log(normlh)*frequ[l];
     if(normlh <=0){
       Rprintf("Formal error in dataset!: normlh is %.3e\n", normlh);
-      cout << "this is for l = " << l << " before " << before[l] << " after " << after[l] << "\n";
+      Rprintf("this is for l = %i: before %s after %s\n", l, before[l].c_str(), after[l].c_str());
       myexit(1);
     }
     
