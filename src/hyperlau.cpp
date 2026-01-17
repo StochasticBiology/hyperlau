@@ -25,10 +25,6 @@ using namespace std::chrono;
 using std::ofstream;
 using Matrix = std::vector<std::vector<double>>;
 
-int globalL;
-string globalstr;
-vector<string> globalR;
-
 void myexit(int code)
 {
   Rcpp::stop("exiting");
@@ -335,7 +331,7 @@ void build_trans_matrix(int L, vector<double> x_current, int model, mat& mat_tem
  Output:
  - double that indicates the log-likelihood of seeing the input data given the rate vector x_current
  */
-double loglh(vector<string> before, vector<string> after, vector<int> frequ, int L, vector<double> x_current, int model){
+double loglh(vector<string> before, vector<string> after, vector<int> frequ, int L, vector<double> x_current, int model, vector<string> globalR){
   
   vec loglh(before.size(), fill::zeros);
   
@@ -465,7 +461,7 @@ double loglh(vector<string> before, vector<string> after, vector<int> frequ, int
  Output:
  - double that indicates the log-likelihood of seeing the input data given the transition matrix x_current
  */
-double loglh_minus_1(vector<string> before, vector<string> after, vector<int> frequ, int L, mat x_current){
+double loglh_minus_1(vector<string> before, vector<string> after, vector<int> frequ, int L, mat x_current, vector<string> globalR){
   
   //Calculate the new likelihood given the new matrix
   vec loglh(before.size(), fill::zeros);
@@ -580,8 +576,6 @@ double loglh_minus_1(vector<string> before, vector<string> after, vector<int> fr
     double normlh = 2/factor*lh;
     loglh[l] = log(normlh)*frequ[l];
     if(normlh <=0){
-      // IGJ: this error gets thrown when we work with the loaded package and the TB L=10 data
-      // but not when we run that from within the dev environment??
       Rprintf("Formal error in dataset!: normlh is %.3e\n", normlh);
       Rprintf("this is for l = %i: before %s after %s\n", l, before[l].c_str(), after[l].c_str());
       myexit(1);
@@ -608,13 +602,13 @@ double loglh_minus_1(vector<string> before, vector<string> after, vector<int> fr
  - vector<double> best_mat: vector containing the best transition rates that were found in order to optimize the likelihood function
  - vector<double> prog_best_lik: vector containing the log-likelihoods for every simulated annealing loop
  */
-void simulated_annealing(vector<double> x_initial, vector<double>& best_mat, int L, vector<string> before, vector<string> after, vector<int> frequ, int model, vector<double>& prog_best_lik, double denom){
+void simulated_annealing(vector<double> x_initial, vector<double>& best_mat, int L, vector<string> before, vector<string> after, vector<int> frequ, int model, vector<double>& prog_best_lik, double denom, vector<string> globalR){
   double temp = 1;
   vector<double> x_old = x_initial;
   vector<double> x_current = x_initial;
   vector<double> x_current_temp = x_initial;
   
-  double lik_initial = loglh(before, after, frequ, L, x_initial, model);
+  double lik_initial = loglh(before, after, frequ, L, x_initial, model, globalR);
   
   double best_lik = lik_initial;
   double new_lik = lik_initial;
@@ -636,7 +630,7 @@ void simulated_annealing(vector<double> x_initial, vector<double>& best_mat, int
     
     x_current_temp = x_current;
     
-    new_lik = loglh(before, after, frequ, L, x_current, model);
+    new_lik = loglh(before, after, frequ, L, x_current, model, globalR);
     
     if (new_lik > old_lik || exp(-(old_lik -new_lik)/temp) > drand48()){
       old_lik = new_lik;
@@ -675,7 +669,7 @@ void simulated_annealing(vector<double> x_initial, vector<double>& best_mat, int
  - mat best_mat: matrix containing the best transition probabilities that were found in order to optimize the likelihood function
  - vector<double> prog_best_lik: vector containing the log-likelihoods for every simulated annealing loop
  */
-void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<string> before, vector<string> after, vector<int> frequ, vector<double>& prog_best_lik, double denom){
+void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<string> before, vector<string> after, vector<int> frequ, vector<double>& prog_best_lik, double denom, vector<string> globalR){
  /* for(int i = 0; i < pow(2,L); i++){
     for( int j = 0; j < pow(2,L)-1; j++){
       if(x_initial(i,j) != 0){
@@ -694,7 +688,7 @@ void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<str
   mat x_current = x_initial;
   mat x_current_temp = x_initial;
   
-  double lik_initial = loglh_minus_1(before, after, frequ, L, x_initial);
+  double lik_initial = loglh_minus_1(before, after, frequ, L, x_initial, globalR);
   
   double best_lik = lik_initial;
   double new_lik = lik_initial;
@@ -704,8 +698,7 @@ void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<str
   double up = log(thresh/temp);
   double down = log(1/denom);
   double num_it = up/down;
-  int iteration = 0;
-  
+
   while (temp > thresh){
     
     auto start = high_resolution_clock::now();
@@ -734,7 +727,7 @@ void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<str
     }
     
     
-    new_lik = loglh_minus_1(before, after, frequ, L, x_current);
+    new_lik = loglh_minus_1(before, after, frequ, L, x_current, globalR);
     
     if (new_lik > old_lik || exp(-(old_lik -new_lik)/temp) > drand48()){
       old_lik = new_lik;
@@ -787,6 +780,8 @@ List HyperLAU(NumericMatrix obs,
  {
    
    Rprintf("Starting HyperLAU\n");
+   int globalL;
+   vector<string> globalR;
    
    List l;
    
@@ -804,7 +799,7 @@ List HyperLAU(NumericMatrix obs,
    vector<string> data(n);
    
    for (int i = 0; i < n; i++) {
-     Rprintf("  getting row %i\n", i);
+     //Rprintf("  getting row %i\n", i);
      
      std::string s, s1;
 
@@ -857,7 +852,7 @@ List HyperLAU(NumericMatrix obs,
    
    for(int boot = 0; boot <= _bootstrap; boot++) {
      Rprintf("Bootstrap %i\n", boot);
-   Rprintf("Checking duplicates\n");
+   //Rprintf("Checking duplicates\n");
    // check for duplications 
    vector<int> frequ;
    vector<string> reduced_data;
@@ -878,7 +873,7 @@ List HyperLAU(NumericMatrix obs,
    // setting L to the string length (= number of considered features)
    string first_row = reduced_data[0];
    
-   Rprintf("Extracting words\n");
+   //Rprintf("Extracting words\n");
    
    string S;
    vector<string> all;
@@ -892,7 +887,7 @@ List HyperLAU(NumericMatrix obs,
      }
    }
    
-   Rprintf("Building dataset\n");
+   //Rprintf("Building dataset\n");
    
    string next;
    vector<string> before;
@@ -904,10 +899,10 @@ List HyperLAU(NumericMatrix obs,
      } else{
        after.push_back(next);
      }
-     Rprintf("Datapoint %i: %s\n", j, next.c_str());
+     //Rprintf("Datapoint %i: %s\n", j, next.c_str());
    }
    
-   Rprintf("Initialising matrix\n");
+   //Rprintf("Initialising matrix\n");
    
    //initialising the rate matrix
    int num_param = pow(globalL,_model);
@@ -953,11 +948,11 @@ List HyperLAU(NumericMatrix obs,
    
    //Simulated annealing 
    vector<double> prog_best_lik;
-   Rprintf("Simulated annealing started \n");
+   //Rprintf("Simulated annealing started \n");
    if (_model != -1){
-     simulated_annealing(x_initial_vec, best_vec, globalL, before, after, frequ, _model, prog_best_lik, denom);
+     simulated_annealing(x_initial_vec, best_vec, globalL, before, after, frequ, _model, prog_best_lik, denom, globalR);
    }else{
-     simulated_annealing_minus_1(x_initial, best_mat, globalL, before, after, frequ, prog_best_lik, denom);
+     simulated_annealing_minus_1(x_initial, best_mat, globalL, before, after, frequ, prog_best_lik, denom, globalR);
    }
    
    // get the final transition matrix
