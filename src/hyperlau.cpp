@@ -93,7 +93,6 @@ int binary2int(string bin, int L){
  - Updated versions of n_partners, cumulative_partners, and partners.
  */
 void possible_transitions(vector<int>& n_partners, vector<int>& cumulative_partners, vector<int>& partners, int L){
-  int index = 0;
   int end_node_int;
   string end_node;
   //Loop through all the states
@@ -581,6 +580,8 @@ double loglh_minus_1(vector<string> before, vector<string> after, vector<int> fr
     double normlh = 2/factor*lh;
     loglh[l] = log(normlh)*frequ[l];
     if(normlh <=0){
+      // IGJ: this error gets thrown when we work with the loaded package and the TB L=10 data
+      // but not when we run that from within the dev environment??
       Rprintf("Formal error in dataset!: normlh is %.3e\n", normlh);
       Rprintf("this is for l = %i: before %s after %s\n", l, before[l].c_str(), after[l].c_str());
       myexit(1);
@@ -652,7 +653,7 @@ void simulated_annealing(vector<double> x_initial, vector<double>& best_mat, int
     if (temp == 1){
       auto stop = high_resolution_clock::now();
       auto duration = duration_cast<milliseconds>(stop - start);
-      cout << "Estimated time: " << num_it*duration.count()/60000 << " minutes" << endl;
+      Rprintf("Estimated time: %.3e minutes\n", num_it*duration.count()/60000);
       
     }
     
@@ -675,6 +676,19 @@ void simulated_annealing(vector<double> x_initial, vector<double>& best_mat, int
  - vector<double> prog_best_lik: vector containing the log-likelihoods for every simulated annealing loop
  */
 void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<string> before, vector<string> after, vector<int> frequ, vector<double>& prog_best_lik, double denom){
+ /* for(int i = 0; i < pow(2,L); i++){
+    for( int j = 0; j < pow(2,L)-1; j++){
+      if(x_initial(i,j) != 0){
+      x_initial(i,j) = 1;
+      }
+    }
+  }
+    for(int i = 0; i < pow(2,L); i++){
+    for( int j = 0; j < pow(2,L)-1; j++){
+      x_initial(i,j) /= sum(x_initial(j));
+    }
+  }*/
+  
   double temp = 1;
   mat x_old = x_initial;
   mat x_current = x_initial;
@@ -690,11 +704,12 @@ void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<str
   double up = log(thresh/temp);
   double down = log(1/denom);
   double num_it = up/down;
+  int iteration = 0;
   
   while (temp > thresh){
     
     auto start = high_resolution_clock::now();
-    
+
     //Small perturbations to get a new matrix
     for(int i = 0; i < pow(2,L); i++){
       for( int j = 0; j < pow(2,L); j++){
@@ -736,7 +751,7 @@ void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<str
     if (temp == 1){
       auto stop = high_resolution_clock::now();
       auto duration = duration_cast<milliseconds>(stop - start);
-      cout << "Estimated time: " << (num_it*duration.count())/60000 << " minutes" <<  endl;
+      Rprintf("Estimated time: %.3e minutes\n", (num_it*duration.count())/60000);
       
     }
     
@@ -817,8 +832,7 @@ List HyperLAU(NumericMatrix obs,
        //data[2*i+0] = s1;
      
      data[i] = s1 + " " + s;
-     cout << i << ":" << data[2*i+0] << "->" << data[2*i+1] << "\n";
-   }
+  }
    
    globalL = m;
    
@@ -890,12 +904,10 @@ List HyperLAU(NumericMatrix obs,
      } else{
        after.push_back(next);
      }
-     cout << "Datapoint " << j << ": " << next << "\n";
+     Rprintf("Datapoint %i: %s\n", j, next.c_str());
    }
    
-   //	cout << "Inference started with dataset " << file_name << " under model " << model << " with " << bootstrap << " bootstrap resamples. Used random seed: " << seed <<". Annealing rate: " << denom << endl;
-   
-   Rprintf("Initialisaing matrix\n");
+   Rprintf("Initialising matrix\n");
    
    //initialising the rate matrix
    int num_param = pow(globalL,_model);
