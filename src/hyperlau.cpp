@@ -25,6 +25,9 @@ using namespace std::chrono;
 using std::ofstream;
 using Matrix = std::vector<std::vector<double>>;
 
+#define RNDSEED(x) R::runif(0.0, 1.0)
+#define RND R::runif(0.0, 1.0)
+
 void myexit(int code)
 {
   Rcpp::stop("exiting");
@@ -625,14 +628,14 @@ void simulated_annealing(vector<double> x_initial, vector<double>& best_mat, int
     
     //Small perturbations to get a new matrix
     for (int i = 0; i < x_old.size(); i++){
-      x_current[i] = x_old[i] + (drand48() - 0.5)*0.05;
+      x_current[i] = x_old[i] + (RND - 0.5)*0.05;
     }
     
     x_current_temp = x_current;
     
     new_lik = loglh(before, after, frequ, L, x_current, model, globalR);
     
-    if (new_lik > old_lik || exp(-(old_lik -new_lik)/temp) > drand48()){
+    if (new_lik > old_lik || exp(-(old_lik -new_lik)/temp) > RND){
       old_lik = new_lik;
       x_old = x_current;
     }
@@ -709,7 +712,7 @@ void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<str
         if(x_old(i,j) == 0){
           x_current(i,j) = x_old(i,j);
         }else{
-          x_current(i,j) = x_old(i,j) + (drand48()-0.5)*0.05;
+          x_current(i,j) = x_old(i,j) + (RND-0.5)*0.05;
           if( x_current(i,j) < 0){
             x_current(i,j) = 0.0001;
           }
@@ -729,7 +732,7 @@ void simulated_annealing_minus_1(mat x_initial, mat& best_mat, int L, vector<str
     
     new_lik = loglh_minus_1(before, after, frequ, L, x_current, globalR);
     
-    if (new_lik > old_lik || exp(-(old_lik -new_lik)/temp) > drand48()){
+    if (new_lik > old_lik || exp(-(old_lik -new_lik)/temp) > RND){
       old_lik = new_lik;
       x_old = x_current;
     }
