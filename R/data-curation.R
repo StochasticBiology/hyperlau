@@ -42,7 +42,9 @@ curate.uncertain.tree = function(tree,
   if(ncol(data) == 2) {
     my.data = data
   } else {
-    data[data == 2 | data == -1] = "?"
+    d.labels = data[,1]
+    data[(data == 2 | data == -1)] = "?"
+    data[,1] = d.labels
     my.data = as.data.frame(cbind(data[,1], apply(data[,2:ncol(data)], 1, paste, collapse="")))
   }
   my.rooted.tree = tree
